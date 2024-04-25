@@ -77,6 +77,13 @@ def get_watched_list():
     return watched
 
 
+def show_watched_list():
+    print("############ Watched Titles ############")
+    watched = get_watched_list()
+    for title in watched:
+        print(f"✿ {title}")
+
+
 def check_genre_presence(genres_to_check, available_genres):
     return any(genre in available_genres for genre in genres_to_check)
 
@@ -131,13 +138,18 @@ def show_menu():
     menu = [
     inquirer.List('select',
                     message="Menu",
-                    choices=['Search anime', 'Settings', 'Exit'],
+                    choices=['Search anime', 'Show watched list', 'Settings', 'Exit'],
                 ),
     ]
     answer = inquirer.prompt(menu)
     match answer['select']:
         case 'Search anime':
             search_anime()
+        case 'Show watched list':
+            show_watched_list()
+            print('\n')
+            time.sleep(1)
+            show_menu()
         case 'Settings':
             show_settings_menu()
         case 'Exit':
