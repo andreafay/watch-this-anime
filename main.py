@@ -9,30 +9,33 @@ jikan = Jikan()
 spinner = yaspin(text="✩ Picking the best anime for you ✩")
 
 default_rating = 8.00
+default_genres = []
 
 def search_anime():
+    global default_genres
+
     while True:
         try:
             response = jikan.random(type='anime')
             spinner.start()
             anime_score = response['data']['score']
-            if anime_score is not None and anime_score >= default_rating:
+            anime_genres = response['data']['genres']
+            genres_list = [genre['name'] for genre in anime_genres]
+            if anime_score is not None and anime_score >= default_rating and any(g in genres_list for g in default_genres) :
                     spinner.stop()
                     time.sleep(0.5)
                     anime_title = response['data']['title']
                     anime_score = response['data']['score']
                     anime_year = response['data']['year']
-                    anime_genres = response['data']['genres']
-                    genre = [genre['name'] for genre in anime_genres]
-                    genres = ", ".join(genre)
+                    genres = ", ".join(genres_list)
                     anime_link = response['data']['url']
                     print("##################################################")
                     print("################### Your anime ###################\n")
                     print(f"# Title: {anime_title}")
                     print(f"# Genres: {genres}")
                     print(f"# Year: {anime_year}")
-                    print(f"# Link: {anime_link}")
                     print(f"# Score: {anime_score}")
+                    print(f"# Link: {anime_link}")
                     print("\n##################################################")
                     print("##################################################\n")
                     break
@@ -51,7 +54,7 @@ def search_anime():
         case 'Search again':
             search_anime()
         case 'Main menu':
-            menu()
+            show_menu()
         case 'Exit':
             sys.exit()
 
@@ -66,10 +69,24 @@ def change_rating():
             ]
     answer = inquirer.prompt(rating)
     default_rating = float(answer['select'])
-    menu()
+    show_settings_menu()
 
 
-def show_settings():
+def set_genres():
+    global default_genres
+    genres = [
+    inquirer.Checkbox('select',
+                message="Pick the genres you would like",
+                choices=['Action', 'Adventure', 'Avant Garde', 'Award Winning', 'Boys Love', 'Comedy', 'Drama',
+                         'Fantasy', 'Girls Love', 'Gourmet', 'Horror', 'Mistery', 'Romance', 'Sci-Fi'
+                         'Slice of Life', 'Sports', 'Supernatural', 'Suspense'],
+                ),
+            ]
+    answer = inquirer.prompt(genres)
+    default_genres = (answer['select'])
+    show_settings_menu()
+
+def show_settings_menu():
     settings = [
     inquirer.List('select',
                 message="Settings",
@@ -81,12 +98,12 @@ def show_settings():
         case 'Rating':
             change_rating()
         case 'Genres':
-            menu()
+            set_genres()
         case 'Back':
-            menu()
+            show_menu()
 
 
-def menu():
+def show_menu():
     menu = [
     inquirer.List('select',
                     message="Menu",
@@ -98,10 +115,10 @@ def menu():
         case 'Search anime':
             search_anime()
         case 'Settings':
-            show_settings()
+            show_settings_menu()
         case 'Exit':
             sys.exit()
 
 
 if __name__ == "__main__":
-     menu()
+     show_menu()
