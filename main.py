@@ -13,6 +13,7 @@ default_genres = []
 
 def search_anime():
     global default_genres
+    watched_animes = get_watched_list()
 
     while True:
         try:
@@ -20,12 +21,12 @@ def search_anime():
             spinner.start()
             anime_score = response['data']['score']
             anime_genres = response['data']['genres']
+            anime_title = response['data']['title']
             genres_list = [genre['name'] for genre in anime_genres]
-            if anime_score is not None and anime_score >= default_rating:
+            if anime_title not in watched_animes and anime_score is not None and anime_score >= default_rating:
                     if (not default_genres or (default_genres and check_genre_presence(default_genres, genres_list))):
                         spinner.stop()
                         time.sleep(0.5)
-                        anime_title = response['data']['title']
                         anime_score = response['data']['score']
                         anime_year = response['data']['year']
                         genres = ", ".join(genres_list)
@@ -55,15 +56,25 @@ def search_anime():
         case 'Search again':
             search_anime()
         case 'Mark as watched':
-            mark_as_watched()
+            mark_as_watched(anime_title)
+            show_menu()
         case 'Main menu':
             show_menu()
         case 'Exit':
             sys.exit()
 
 
-def mark_as_watched():
-    print('Watched!')
+def mark_as_watched(title):
+    with open("watched.txt", "a") as file:
+        file.write(title + "\n")
+
+
+def get_watched_list():
+    watched = []
+    with open("watched.txt", "r") as file:
+        for line in file:
+            watched.append(line.strip())
+    return watched
 
 
 def check_genre_presence(genres_to_check, available_genres):
@@ -97,6 +108,7 @@ def set_genres():
     answer = inquirer.prompt(genres)
     default_genres = (answer['select'])
     show_settings_menu()
+
 
 def show_settings_menu():
     settings = [
