@@ -21,24 +21,25 @@ def search_anime():
             anime_score = response['data']['score']
             anime_genres = response['data']['genres']
             genres_list = [genre['name'] for genre in anime_genres]
-            if anime_score is not None and anime_score >= default_rating and any(g in genres_list for g in default_genres) :
-                    spinner.stop()
-                    time.sleep(0.5)
-                    anime_title = response['data']['title']
-                    anime_score = response['data']['score']
-                    anime_year = response['data']['year']
-                    genres = ", ".join(genres_list)
-                    anime_link = response['data']['url']
-                    print("##################################################")
-                    print("################### Your anime ###################\n")
-                    print(f"# Title: {anime_title}")
-                    print(f"# Genres: {genres}")
-                    print(f"# Year: {anime_year}")
-                    print(f"# Score: {anime_score}")
-                    print(f"# Link: {anime_link}")
-                    print("\n##################################################")
-                    print("##################################################\n")
-                    break
+            if anime_score is not None and anime_score >= default_rating:
+                    if (not default_genres or (default_genres and check_genre_presence(default_genres, genres_list))):
+                        spinner.stop()
+                        time.sleep(0.5)
+                        anime_title = response['data']['title']
+                        anime_score = response['data']['score']
+                        anime_year = response['data']['year']
+                        genres = ", ".join(genres_list)
+                        anime_link = response['data']['url']
+                        print("##################################################")
+                        print("################### Your anime ###################\n")
+                        print(f"# Title: {anime_title}")
+                        print(f"# Genres: {genres}")
+                        print(f"# Year: {anime_year}")
+                        print(f"# Score: {anime_score}")
+                        print(f"# Link: {anime_link}")
+                        print("\n##################################################")
+                        print("##################################################\n")
+                        break
             
         except Exception as e:
             pass
@@ -46,17 +47,27 @@ def search_anime():
     what_next = [
     inquirer.List('select',
                 message="What now?✩ ",
-                choices=['Search again', 'Main menu', 'Exit'],
+                choices=['Search again', 'Mark as watched', 'Main menu', 'Exit'],
                 ),
             ]
     answer = inquirer.prompt(what_next)
     match answer['select']:
         case 'Search again':
             search_anime()
+        case 'Mark as watched':
+            mark_as_watched()
         case 'Main menu':
             show_menu()
         case 'Exit':
             sys.exit()
+
+
+def mark_as_watched():
+    print('Watched!')
+
+
+def check_genre_presence(genres_to_check, available_genres):
+    return any(genre in available_genres for genre in genres_to_check)
 
 
 def change_rating():
@@ -80,6 +91,7 @@ def set_genres():
                 choices=['Action', 'Adventure', 'Avant Garde', 'Award Winning', 'Boys Love', 'Comedy', 'Drama',
                          'Fantasy', 'Girls Love', 'Gourmet', 'Horror', 'Mistery', 'Romance', 'Sci-Fi'
                          'Slice of Life', 'Sports', 'Supernatural', 'Suspense'],
+                default=default_genres,
                 ),
             ]
     answer = inquirer.prompt(genres)
