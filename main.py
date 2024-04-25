@@ -13,7 +13,8 @@ default_genres = []
 
 def search_anime():
     global default_genres
-    watched_animes = get_watched_list()
+    show_err_message = False
+    watched_animes = get_watched_list(show_err_message)
 
     while True:
         try:
@@ -23,7 +24,7 @@ def search_anime():
             anime_genres = response['data']['genres']
             anime_title = response['data']['title']
             genres_list = [genre['name'] for genre in anime_genres]
-            if anime_title not in watched_animes and anime_score is not None and anime_score >= default_rating:
+            if (not watched_animes or anime_title not in watched_animes) and (anime_score is not None and anime_score >= default_rating):
                     if (not default_genres or (default_genres and check_genre_presence(default_genres, genres_list))):
                         spinner.stop()
                         time.sleep(0.5)
@@ -48,13 +49,16 @@ def search_anime():
     what_next = [
     inquirer.List('select',
                 message="What now?✩ ",
-                choices=['Search again', 'Mark as watched', 'Main menu', 'Exit'],
+                choices=['Search again', 'Mark as to watch', 'Mark as watched', 'Main menu', 'Exit'],
                 ),
             ]
     answer = inquirer.prompt(what_next)
     match answer['select']:
         case 'Search again':
             search_anime()
+        case 'Mark as to watch':
+            mark_as_to_watch(anime_title)
+            show_menu()
         case 'Mark as watched':
             mark_as_watched(anime_title)
             show_menu()
@@ -64,24 +68,54 @@ def search_anime():
             sys.exit()
 
 
+def mark_as_to_watch(title):
+    with open("to_watch.txt", "a") as file:
+        file.write(title + "\n")
+
+
+def get_to_watch_list():
+    to_watch = []
+    try:
+        with open("to_watch.txt", "r") as file:
+            for line in file:
+                to_watch.append(line.strip())
+        return to_watch
+    except FileNotFoundError:
+        print("The to watch list is empty :)")
+
+
+def show_to_watch_list():
+    to_watch = get_to_watch_list()
+    if to_watch:
+        print("############ My To Watch Titles ############")
+        for title in to_watch:
+            print(f"✿ {title}")
+
+
 def mark_as_watched(title):
     with open("watched.txt", "a") as file:
         file.write(title + "\n")
 
 
-def get_watched_list():
+def get_watched_list(show_err_message):
     watched = []
-    with open("watched.txt", "r") as file:
-        for line in file:
-            watched.append(line.strip())
-    return watched
+    try:
+        with open("watched.txt", "r") as file:
+            for line in file:
+                watched.append(line.strip())
+        return watched
+    except FileNotFoundError:
+        if show_err_message:
+            print("The watched list is empty :)")
+        return watched
 
 
 def show_watched_list():
-    print("############ Watched Titles ############")
     watched = get_watched_list()
-    for title in watched:
-        print(f"✿ {title}")
+    if watched:
+        print("############ My Watched Titles ############")
+        for title in watched:
+            print(f"✿ {title}")
 
 
 def check_genre_presence(genres_to_check, available_genres):
@@ -138,14 +172,19 @@ def show_menu():
     menu = [
     inquirer.List('select',
                     message="Menu",
-                    choices=['Search anime', 'Show watched list', 'Settings', 'Exit'],
+                    choices=['Search anime', 'My To Watch list', 'My Watched list', 'Settings', 'Exit'],
                 ),
     ]
     answer = inquirer.prompt(menu)
     match answer['select']:
         case 'Search anime':
             search_anime()
-        case 'Show watched list':
+        case 'My To Watch list':
+            show_to_watch_list()
+            print('\n')
+            time.sleep(1)
+            show_menu()
+        case 'My Watched list':
             show_watched_list()
             print('\n')
             time.sleep(1)
