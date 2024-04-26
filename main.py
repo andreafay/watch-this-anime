@@ -1,7 +1,7 @@
 from jikanpy import Jikan
 from yaspin import yaspin
 import inquirer
-import random
+import keyboard
 import time
 import sys
 
@@ -10,11 +10,13 @@ spinner = yaspin(text="✩ Picking the best anime for you ✩")
 
 default_rating = 8.00
 default_genres = []
+to_watch = []
+watched = []
 
 def search_anime():
     global default_genres
-    show_err_message = False
-    watched_animes = get_watched_list(show_err_message)
+    global to_watch
+    global watched
 
     while True:
         try:
@@ -24,7 +26,7 @@ def search_anime():
             anime_genres = response['data']['genres']
             anime_title = response['data']['title']
             genres_list = [genre['name'] for genre in anime_genres]
-            if (not watched_animes or anime_title not in watched_animes) and (anime_score is not None and anime_score >= default_rating):
+            if (not watched or anime_title not in watched) and (anime_score is not None and anime_score >= default_rating):
                     if (not default_genres or (default_genres and check_genre_presence(default_genres, genres_list))):
                         spinner.stop()
                         time.sleep(0.5)
@@ -73,23 +75,56 @@ def mark_as_to_watch(title):
         file.write(title + "\n")
 
 
-def get_to_watch_list():
-    to_watch = []
+def get_to_watch_list(onStart):
+    to_watch_list = []
     try:
         with open("to_watch.txt", "r") as file:
             for line in file:
-                to_watch.append(line.strip())
-        return to_watch
+                to_watch_list.append(line.strip())
+        return to_watch_list
     except FileNotFoundError:
+        if onStart:
+            pass
         print("The to watch list is empty :)")
 
 
 def show_to_watch_list():
-    to_watch = get_to_watch_list()
+    global to_watch
+    to_watch = get_to_watch_list(False)
+    file = 'to_watch.txt'
     if to_watch:
         print("############ My To Watch Titles ############")
         for title in to_watch:
             print(f"✿ {title}")
+        print("\nPress [W] to mark as a watched a title from the list")
+        print("Press [R] to remove a title from the list")
+        print("Press [M] to go back to the menu\n")
+        while True:
+            key = keyboard.read_key()
+            match key:
+                case 'w':
+                    print("w")
+                case 'r':
+                    titles = [
+                    inquirer.Checkbox('select',
+                    message="What titles you want to remove?",
+                    choices=to_watch,
+                    ),
+                    ]
+                    answer = inquirer.prompt(titles)
+                    result = [title for title in to_watch if title not in (answer['select'])]
+                    remove_titles(result, file)
+                    time.sleep(0.5)
+                    show_menu()
+                case 'm':
+                    show_menu()
+                case _: 
+                    continue
+    else:
+        print("The to watch list is empty :)\n")
+        time.sleep(0.5)
+        show_menu()
+                
 
 
 def mark_as_watched(title):
@@ -97,25 +132,53 @@ def mark_as_watched(title):
         file.write(title + "\n")
 
 
-def get_watched_list(show_err_message):
-    watched = []
+def get_watched_list(onStart):
+    watched_list = []
     try:
         with open("watched.txt", "r") as file:
             for line in file:
-                watched.append(line.strip())
-        return watched
+                watched_list.append(line.strip())
+        return watched_list
     except FileNotFoundError:
-        if show_err_message:
-            print("The watched list is empty :)")
+        if onStart:
+            pass
+        print("The watched list is empty :)")
         return watched
 
 
 def show_watched_list():
-    watched = get_watched_list()
+    global watched
+    watched = get_watched_list(False)
+    file = 'watched.txt'
     if watched:
         print("############ My Watched Titles ############")
         for title in watched:
             print(f"✿ {title}")
+        print("\nPress [R] to remove a title from the list")
+        print("Press [M] to go back to the menu\n")
+        while True:
+            key = keyboard.read_key()
+            match key:
+                case 'r':
+                    titles = [
+                    inquirer.Checkbox('select',
+                    message="What titles you want to remove?",
+                    choices=watched,
+                    ),
+                    ]
+                    answer = inquirer.prompt(titles)
+                    result = [title for title in watched if title not in (answer['select'])]
+                    remove_titles(result, file)
+                    time.sleep(0.5)
+                    show_menu()
+                case 'm':
+                    show_menu()
+                case _: 
+                    continue
+    else:
+        print("The watched list is empty :)\n")
+        time.sleep(0.5)
+        show_menu()
 
 
 def check_genre_presence(genres_to_check, available_genres):
@@ -151,6 +214,12 @@ def set_genres():
     show_settings_menu()
 
 
+def remove_titles(titles, file):
+    with open(file, 'w') as f:
+        for title in titles:
+            f.write(title + '\n')
+
+
 def show_settings_menu():
     settings = [
     inquirer.List('select',
@@ -169,6 +238,10 @@ def show_settings_menu():
 
 
 def show_menu():
+    global to_watch
+    global watched
+    to_watch = get_to_watch_list(True)
+    watched = get_watched_list(True)
     menu = [
     inquirer.List('select',
                     message="Menu",
@@ -182,13 +255,9 @@ def show_menu():
         case 'My To Watch list':
             show_to_watch_list()
             print('\n')
-            time.sleep(1)
-            show_menu()
         case 'My Watched list':
             show_watched_list()
             print('\n')
-            time.sleep(1)
-            show_menu()
         case 'Settings':
             show_settings_menu()
         case 'Exit':
