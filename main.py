@@ -84,8 +84,8 @@ def get_to_watch_list(onStart):
         return to_watch_list
     except FileNotFoundError:
         if onStart:
-            pass
-        print("The to watch list is empty :)")
+            return to_watch_list
+        print("✿ The to watch list is empty ✿\n")
 
 
 def show_to_watch_list():
@@ -121,7 +121,6 @@ def show_to_watch_list():
                 case _: 
                     continue
     else:
-        print("The to watch list is empty :)\n")
         time.sleep(0.5)
         show_menu()
                 
@@ -141,9 +140,8 @@ def get_watched_list(onStart):
         return watched_list
     except FileNotFoundError:
         if onStart:
-            pass
-        print("The watched list is empty :)")
-        return watched
+            return watched_list
+        print("✿ The watched list is empty ✿\n")
 
 
 def show_watched_list():
@@ -176,7 +174,6 @@ def show_watched_list():
                 case _: 
                     continue
     else:
-        print("The watched list is empty :)\n")
         time.sleep(0.5)
         show_menu()
 
