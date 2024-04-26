@@ -71,8 +71,14 @@ def search_anime():
 
 
 def mark_as_to_watch(title):
-    with open("to_watch.txt", "a") as file:
-        file.write(title + "\n")
+    try:
+        with open("to_watch.txt", "a", encoding="utf-8") as file:
+            file.write(title + "\n")
+    except UnicodeEncodeError:
+        # Replace problematic character with '?'
+        newTitle = title.encode('ascii', 'replace').decode('ascii')
+        with open("to_watch.txt", "a", encoding="utf-8") as file:
+            file.write(newTitle + "\n")
 
 
 def get_to_watch_list(onStart):
@@ -140,8 +146,14 @@ def show_to_watch_list():
 
 
 def mark_as_watched(title):
-    with open("watched.txt", "a") as file:
-        file.write(title + "\n")
+    try:
+        with open("watched.txt", "a", encoding="utf-8") as file:
+            file.write(title + "\n")
+    except UnicodeEncodeError:
+        # Replace problematic character with '?'
+        newTitle = title.encode('ascii', 'replace').decode('ascii')
+        with open("watched.txt", "a", encoding="utf-8") as file:
+            file.write(newTitle + "\n")
 
 
 def get_watched_list(onStart):
