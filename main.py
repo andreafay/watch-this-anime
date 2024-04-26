@@ -81,6 +81,8 @@ def get_to_watch_list(onStart):
         with open("to_watch.txt", "r") as file:
             for line in file:
                 to_watch_list.append(line.strip())
+            if not to_watch_list and not onStart:
+                print("✿ The to watch list is empty ✿\n")
         return to_watch_list
     except FileNotFoundError:
         if onStart:
@@ -103,7 +105,18 @@ def show_to_watch_list():
             key = keyboard.read_key()
             match key:
                 case 'w':
-                    print("w")
+                    titles = [
+                    inquirer.Checkbox('select',
+                    message="What titles you want to mark as watched?",
+                    choices=to_watch,
+                    ),
+                    ]
+                    answer = inquirer.prompt(titles)
+                    result = [title for title in to_watch if title not in (answer['select'])]
+                    remove_titles(result, file)
+                    [mark_as_watched(title) for title in answer['select']]
+                    time.sleep(0.5)
+                    show_menu()
                 case 'r':
                     titles = [
                     inquirer.Checkbox('select',
@@ -137,6 +150,8 @@ def get_watched_list(onStart):
         with open("watched.txt", "r") as file:
             for line in file:
                 watched_list.append(line.strip())
+            if not watched_list and not onStart:
+                print("✿ The watched list is empty ✿\n")
         return watched_list
     except FileNotFoundError:
         if onStart:
