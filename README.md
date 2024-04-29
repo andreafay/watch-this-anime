@@ -1,7 +1,7 @@
 # ✿ WatchThisAnime ✿
 
-WatchThisAnime is a simple CLI written in python that using MAL apis randomly picks for you an anime to watch.
-You can add the recommended anime in your personal ToWatch list, add it in the Watched list or search for a new one.
+WatchThisAnime is a simple CLI written in python that, using MAL apis, randomly picks for you an anime to watch.
+You can then add the recommended anime in your personal ToWatch list, add it in the Watched list or search for a new one.
 It's also possible to apply rating and genres filtering from the Settings menu. 
 
 ## Installation
